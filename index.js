@@ -1,35 +1,36 @@
-const API_KEY = 'e727731dd97b429b9114bd0c2ccb8cfb'; // Replace with your actual API key
-const API_URL = `https://newsapi.org/v2/top-headlines?country=in&category=technology&apiKey=${API_KEY}`;
+const RSS_URL = 'https://www.gadgets360.com/rss/news';
+const API_URL = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`;
 
-async function fetchTechNews() {
+async function fetchRSSNews() {
   const container = document.getElementById('news-container');
-  container.innerHTML = '<p>Loading news...</p>';
+  container.innerHTML = 'Loading tech news...';
 
   try {
-    const response = await fetch(API_URL);
-    const data = await response.json();
+    const res = await fetch(API_URL);
+    const data = await res.json();
 
-    if (data.articles && data.articles.length > 0) {
-      container.innerHTML = '';
-
-      data.articles.forEach(article => {
-        const newsItem = document.createElement('article');
-        newsItem.className = 'news-item';
-        newsItem.innerHTML = `
-          <h2 class="news-title">${article.title}</h2>
-          <div class="news-date">${new Date(article.publishedAt).toDateString()}</div>
-          <p class="news-description">${article.description || ''}</p>
-          <a href="${article.url}" target="_blank">Read more</a>
-        `;
-        container.appendChild(newsItem);
-      });
-    } else {
-      container.innerHTML = '<p>No news found.</p>';
+    if (data.items.length === 0) {
+      container.innerHTML = 'No news found.';
+      return;
     }
-  } catch (error) {
-    console.error('Error fetching news:', error);
-    container.innerHTML = '<p>Error loading news. Try again later.</p>';
+
+    container.innerHTML = '';
+
+    data.items.forEach(item => {
+      const newsItem = document.createElement('div');
+      newsItem.className = 'news-item';
+      newsItem.innerHTML = `
+        <h2 class="news-title">${item.title}</h2>
+        <div class="news-date">${new Date(item.pubDate).toDateString()}</div>
+        <p>${item.description}</p>
+        <a href="${item.link}" target="_blank">Read more</a>
+      `;
+      container.appendChild(newsItem);
+    });
+  } catch (err) {
+    container.innerHTML = 'Error loading news.';
+    console.error(err);
   }
 }
 
-fetchTechNews();
+fetchRSSNews();
